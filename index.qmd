@@ -1,0 +1,41 @@
+# Apresentação {.unnumbered}
+
+A Ouvidoria Nacional dos Serviços Penais - Onasp - é um órgão vinculado à Secretaria Nacional de Políticas Penais do Ministério da Justiça e Segurança Pública - Senappen/MJSP - que tem como objetivos primordiais a defesa dos direitos das pessoas privadas de liberdade e seus familiares, o acolhimento e processamento de manifestações e denúncias de servidores, o fortalecimento do controle e participação social nos serviços penais e, ainda, o monitoramento dos estabelecimentos penais do país, a partir de inspeções prisionais.
+
+Em consonância com as melhores práticas de transparência no serviço público, o regimento interno do Secretaria Nacional de Políticas Penais (Senappen) - portaria MJ nº 199, de 9 de novembro de 2018 - traz como atribuição da Onasp, em seu anexo I artigo nº 4 item V, entre outras:
+
+::: {.callout-note appearance="simple"}
+*V - publicar relatório anual de atividades, com recomendações voltadas à plena garantia dos direitos das pessoas privadas de liberdade e ao aprimoramento da gestão penitenciária no âmbito dos Serviços Penais;*
+:::
+
+Nesse sentido, as atribuições regimentais da Ouvidoria Nacional dos Serviços Penais extrapolam as ações de controle e fiscalização, tornando-se primordial para o apoio na gestão penitenciária e órgãos da sociedade civil organizada. Dessa maneira, as atividades relatadas nesse documento objetivam o aprimoramento do controle social na execução penal, a melhoria das condições estruturais dos conselhos de comunidade, fomento a criação de vagas no sistema penitenciário, melhoria das condições de trabalho das ouvidorias estaduais, além de, aumentar a fiscalização e controle de solicitações, denúncias e reclamações advindas de pessoas custodiadas, seus familiares, servidores penitenciários e órgãos da execução penal.
+
+Para subsidiar as ações da Onasp, no ano de 2020, foi implantado um sistema de gerenciamento para acompanhamento / tratamento das manifestações recebidas. Entre outros produtos, são gerados mensalmente, dados estatísticos quantitativos e qualitativos acerca do tratamento das demandas da Onasp.
+
+No período entre 2020 e 2021, o relatório de gestão da Ouvidoria Nacional dos Serviços Penais foi elaborado e publicizado em meios digitais em *Portable Document Format* (pdf). Nesse sentido, a grande novidade deste novo relatório está em seu novo formato (*e-book*). A ideia partiu da necessidade de construir um fluxo histórico das ações e projetos da ouvidoria, além de facilitar e agilizar a publicidade e atualização das informações. Entre outras funcionalidades, este novo relatório permite:
+
+-   consultar informações de relatórios referentes a períodos anteriores;
+
+-   navegar entre as páginas utilizando os links de acesso estrategicamente localizados;
+
+-   filtrar assuntos dentro do relatório utilizando a barra de pesquisa geral;
+
+-   ampliar, diminuir e/ou imprimir os gráficos e suas análises; e
+
+-   selecionar observações e itens em tabelas e gráficos;
+
+Outro avanço tecnológico significativo dos trabalhos na Ouvidoria Nacional dos Serviços Penais diz respeito à publicação do **Painel de Tratamento das Demandas de Ouvidoria**. Essa é uma ferramenta de *Business Inteligence* construída pela equipe da Onasp e atualizada constantemente com informações detalhadas acerca das manifestações recebidas. O objetivo principal é subsidiar as ações da ouvidoria e, em segundo plano, complementar as análises estatísticas contida neste relatório e ampliar a publicidade e transparência dos processos. [Clique aqui para visualizar o painel.](https://app.powerbi.com/links/Pu1YtXZQOP?ctid=eb090420-444c-43f7-91f2-4b8da6bfe8e1&pbi_source=linkShare&bookmarkGuid=00a4c543-938f-4619-bc10-0cf7500e92ed)
+
+Entre outras informações, o painel contém:
+
+-   íntegra dos relatos de denúncias e reclamações;
+
+-   informações regionalizadas de cada tipo de manifestação;
+
+-   consulta de processos e manifestações em cada estabelecimento prisional;
+
+-   dados sobre o gênero do demandante; e
+
+-   índices para controle do tempo de atendimento.
+
+As demandas externas e internas são recebidas através de cartas, e-mails, contatos telefônicos, via Plataforma Integrada de Ouvidoria e Acesso à Informação (Fala.BR) e atendimento presencial assegurado o completo sigilo de informações dos requerentes.

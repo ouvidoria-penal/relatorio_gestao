@@ -1,0 +1,962 @@
+```{r message=FALSE}
+library(tidyverse)
+library(knitr)
+library(plotly)
+library(kableExtra)
+library(DT)
+library(gganimate)
+library(formattable)
+
+cores <- c("#294661","#7F312F","#808080","#B8860B","#5E3B56","#5F9EA0","#808000","#A0522D",
+           "#F5DEB3","#FF9900","#8B008B","#5F6B6D","#FB8281","#F4D25A","#7F898A","#A4DDEE",
+           "#FDAB89","#B687AC","#28738A","#A78F8F","#168980","darkred","#0000FF","#00FFFF",
+           "#DAA520","#DEB887") #VETOR DE CORES PARA OS GRAFICOS
+
+
+meses <- c("Jan","Fev","Mar","Abr","Mai","Jun","Jul","Ago","Set","Out","Nov","Dez")
+vetor_filtro1 <- c(2020,2021,2022)
+vetor_filtro2 <- c(2021,2022)
+
+dados_gerais <- 
+  readRDS(
+    file = "../bases_tidy/rel1_dados_gerais.rds",
+    #fileEncoding = "UTF-8"
+  )
+
+tipos_demandas <-
+  readRDS(
+    file = "../bases_tidy/rel2_tipos_demandas.rds"
+  )
+
+solicitacoes <- 
+  readRDS(
+    file = "../bases_tidy/rel3_solicitacoes.rds"
+  ) |> 
+  mutate(
+    org_ano_inicio_tratamento = lubridate::year(org_data_inicio_tratamento)
+  )
+```
+
+# Dados Gerais e Evoluções {#sec-dados-gerais}
+
+Este capítulo traz um resumo estatístico qualitativo / quantitativo de desenvolvimento dos trabalhos na Ouvidoria Nacional dos Serviços Penais - Onsp. Mostra-se uma compilação das principais informações sobre as demandas de ouvidoria e suas evoluções com o passar do tempo no período de referência.
+
+A metodologia padronizada para coleta de dados dentro da Onsp iniciou-se em 2020. A partir desse ano, implementaram-se os procedimentos para preenchimento de um formulário padrão estruturado com o objetivo de apoiar as decisões dos gestores do Departamento Penitenciário Nacional (Depen), publicizar informações acerca das demandas de ouvidoria e, além disso, agilizar respostas aos interessados dentro e fora do setor público.
+
+Dentro desse tópico, vê-se informações básicas a respeito do acesso à ouvidoria, da quantidade de demandas recebidas e tratadas pela Onsp, tempo de demora para o encaminhamento das manifestações, tipificação das ocorrências...
+
+## Sobre os meios de acesso à Ouvidoria
+
+O gráfico na @fig-graf-apresentacao-evolucao mostra a evolução do meios de apresentação das manifestações realizadas. Visualiza-se a grande diferença das demandas realizadas via cartas (meio físico) em detrimento das demais formas. Esse fenômeno encontra explicação na impossibilidade de acesso à meios tecnológicos por parte dos custodiados.
+
+```{r}
+
+dados_gerais_apresentacao <- 
+  dados_gerais|> 
+  filter(
+    org_ano_inicio_tratamento %in% vetor_filtro2,
+    !is.na(org_apresentacao_demanda),
+    org_apresentacao_demanda != "N/A",
+    org_apresentacao_demanda != ""
+  ) |> 
+  group_by(
+    org_ano_inicio_tratamento,
+    org_apresentacao_demanda
+  ) |> 
+  summarise(
+    qtd = n()
+  ) |> 
+  ungroup() |> 
+  group_by(
+    org_ano_inicio_tratamento
+  ) |> 
+  mutate(
+    total = sum(qtd, na.rm = TRUE),
+    porcentagem = round((qtd / total)*100, digits = 2)  
+  ) |>  
+ arrange(desc(porcentagem))
+```
+
+```{r}
+#| label: fig-graf-apresentacao-evolucao
+#| fig-cap: >  
+#|       Evolução dos valores absoluto e relativo para dimensão das formas de 
+#|       apresentação das manisfestações à Onsp no período de referência. A coleta 
+#|       dos dados deste quesito iniciou-se em 2021.
+
+ 
+p2 <- dados_gerais_apresentacao |> 
+  plot_ly(
+    x = ~ org_apresentacao_demanda,
+    y = ~ qtd,
+    frame = ~ org_ano_inicio_tratamento,
+    type = "bar",
+    alpha = 0.9,
+    color = ~ org_apresentacao_demanda,
+    colors = "#294661",
+    showlegend = FALSE,
+    hoverinfo = "text"
+  )
+
+p2 <- p2 |> add_text(
+  text = ~ str_c(qtd,"; ",porcentagem,"%"),
+  textposition = "top",
+  color = I("#294661")
+)
+
+p2 <- p2 |> layout(
+  #title = "Tempos médios / 2021",
+  uniformtext=list(minsize=8, mode='hide'),
+  font = list(family = "Comic Sans MS", color = "#294661", size = 13),
+  xaxis = list(title = ""),
+  yaxis = list(title = "Quantidade de Manifestações"),
+  legend = list(orientation = "h")
+)
+
+p2 <- p2 |> animation_opts(
+  easing = "linear",
+  redraw = FALSE,
+  mode = "immediate"
+)
+
+
+p2 <- p2 |> animation_slider(
+    currentvalue = list(
+      prefix = "Ano: ", 
+      font = list(color="#294661")),
+      hide = FALSE
+      #xanchor = "left",
+      #yanchor = "bottom"
+  )
+
+p2 <- p2 |>
+  animation_button(
+    x = 0, 
+    #xanchor = "bottom", 
+    y = 0, 
+    #yanchor = "bottom", 
+    label = "Avançar"
+  )
+
+p2 <- p2 %>% animation_opts(
+    1000, easing = "elastic", redraw = FALSE
+  )
+p2
+```
+
+## Sobre a aptidão ao tratamento das demandas
+
+As manifestações recebidas passam por análise de tipificação para tomada de decisão acerca dos encaminhamentos necessários à solução da manifestação. Nesse momento, percebe-se a inaptidão das demandas seguindo os seguintes critérios: Falta de informações para entendimento do problema; demandas sem nexo e/ou clareza em sua escrita; demandas duplicadas e; manifestações fora do escopo de competência da Onsp.
+
+O gráfico na @fig-graf-aptidao evidencia as quantidade de demandas aptas em relação às não aptas.
+
+```{r}
+dados_gerais_aptidao <- 
+  dados_gerais |>
+  filter(org_ano_inicio_tratamento %in% vetor_filtro1) |> 
+  dplyr::select(
+    org_ano_inicio_tratamento,
+    dem001_demanda_apta,
+    dem002_demanda_motivo_inaptidao
+  ) |> 
+  mutate(org_ano_inicio_tratamento = as.factor(org_ano_inicio_tratamento))
+```
+
+```{r}
+#| label: fig-graf-aptidao
+#| fig-cap: >
+#|  Evolução das informações acerca da aptidão das demandas.
+
+dados_gerais_aptidao1 <- dados_gerais_aptidao  |> 
+  mutate(dem001_demanda_apta = factor(dem001_demanda_apta, levels = c("Sim","Não"))) |> 
+  group_by(
+    org_ano_inicio_tratamento,
+    dem001_demanda_apta
+  ) |> 
+  summarise(
+    qtd = n()
+  ) |> 
+  ungroup() |> 
+  group_by(
+    org_ano_inicio_tratamento
+  ) |> 
+  mutate(
+    total = sum(qtd,na.rm = TRUE),
+    porcentagem = round((qtd/total)*100, digits = 2)
+  ) |> 
+  ggplot(
+    mapping = aes(
+      x = org_ano_inicio_tratamento,
+      y = qtd,
+      group = dem001_demanda_apta
+      )
+  )+
+  geom_bar(
+    aes(
+      colour = dem001_demanda_apta,
+      fill = dem001_demanda_apta
+    ),
+    stat = "identity",
+    position = position_dodge2(),
+    alpha = 0.9
+  )+
+  geom_text(
+    mapping = aes(
+      x=org_ano_inicio_tratamento, 
+      y = qtd, 
+      label = str_c(qtd," / ",porcentagem,"%")
+    ),
+    position = position_dodge2(width = 1.0),
+    vjust = -0.5,
+    hjust = 0.4,
+    size = 3.0,
+    family = "Comic Sans MS",
+    fontface = "plain",
+    color = "#294661"
+  )+
+  scale_color_manual(values = cores)+
+  scale_fill_manual(values = cores)+
+  labs(
+    #x = "Forma de Apresentação da Demanda" , 
+    y = "Valores absoluto / relativo"
+  )+
+  theme_bw()+
+  theme(
+    plot.title = element_text(color = "#294661", size = 8, face = "bold", angle = 0, hjust = 0.5),
+    text = element_text(family = "Comic Sans MS", color = "#294661"),
+    axis.title.x = element_blank(),
+    axis.title.y = element_text(color = "#294661", size = 12, face = "plain", angle = 90),
+    #legend.title = element_text(color = "Black", size = 5, face = "plain",angle = 0),
+    legend.title = element_blank(),
+    legend.text  = element_text(color = "#294661", size = 7, face = "plain",angle = 0),
+    axis.text.x  = element_text(color = "#294661", size = 10, face = "plain",angle = 0),
+    axis.text.y  = element_blank(), 
+    legend.position = "bottom", #POSICAO DA LEGENDA
+    legend.key.size = unit(0.5,"cm") #TAMANHO DA CAIXA DA LEGENDA,
+    
+)
+
+dados_gerais_aptidao1
+
+```
+
+Agora, na @fig-graf-aptidao2, dentro do conjunto de demandas não aptas, temos suas tipificações e frequências absolutas e relativas para cada ano de coleta.
+
+```{r}
+linha <- data.frame(
+  org_ano_inicio_tratamento=as.factor(c(2021)),
+  dem002_demanda_motivo_inaptidao=c("Falta de nexo e/ou  clareza"),
+  qtd = c(0)
+)
+
+dados_gerais_aptidao2 <- 
+  dados_gerais |>
+  filter(
+    org_ano_inicio_tratamento %in% vetor_filtro2,
+    !is.na(dem002_demanda_motivo_inaptidao),
+    !dem002_demanda_motivo_inaptidao %in% c("Demanda apta","","NA")
+    ) |>
+  dplyr::select(
+    org_ano_inicio_tratamento,
+    dem001_demanda_apta,
+    dem002_demanda_motivo_inaptidao
+  ) |> 
+  mutate(org_ano_inicio_tratamento = as.factor(org_ano_inicio_tratamento)) |> 
+  group_by(
+    org_ano_inicio_tratamento,
+    dem002_demanda_motivo_inaptidao
+  ) |> 
+  summarise(
+    qtd = n()
+  ) |> 
+  bind_rows(linha) |> 
+  ungroup() |> 
+  group_by(
+    org_ano_inicio_tratamento
+  ) |> 
+  mutate(
+    total = sum(qtd,na.rm = TRUE),
+    porcentagem = round((qtd/total)*100, digits = 2)
+  ) 
+
+
+
+
+```
+
+```{r}
+#| label: fig-graf-aptidao2
+#| fig-cap: >
+#|  Motivos da inaptidão das demandas. Início de coleta dos dados a partir de 2021.
+
+p1 <- dados_gerais_aptidao2 |> 
+  plot_ly(
+    x = ~ dem002_demanda_motivo_inaptidao,
+    y = ~ qtd,
+    frame = ~ org_ano_inicio_tratamento,
+    type = "bar",
+    alpha = 0.9,
+    color = ~ dem002_demanda_motivo_inaptidao,
+    colors = "#294661",
+    showlegend = FALSE,
+    hoverinfo = "text"
+  )
+
+p1 <- p1 |> add_text(
+  text = ~ str_c(qtd,"; ",porcentagem,"%"),
+  textposition = "top",color = I("#294661")
+)
+
+p1 <- p1 |> layout(
+  #title = "Tempos médios / 2021",
+  uniformtext=list(minsize=8, mode='hide'),
+  font = list(family = "Comic Sans MS", color = "#294661", size = 13),
+  xaxis = list(title = ""),
+  yaxis = list(title = "Quantidade de Manifestações"),
+  legend = list(orientation = "h")
+)
+
+p1 <- p1 |> animation_slider(
+    currentvalue = list(
+      prefix = "Ano: ", 
+      font = list(color="#294661")),
+      hide = FALSE
+      #xanchor = "left",
+      #yanchor = "bottom"
+  )
+
+p1 <- p1 |>
+  animation_button(
+    x = 0, 
+    #xanchor = "bottom", 
+    y = 0, 
+    #yanchor = "bottom", 
+    label = "Avançar"
+  )
+
+p1
+```
+
+## Tempo de atendimento {#sec-tempos}
+
+```{r}
+dados_gerais_tempos <- 
+  dados_gerais |> 
+  select(
+    org_ano_inicio_tratamento,
+    org_mes_inicio_tratamento,
+    tempo_chegada_onsp,
+    tempo_tratamento_onsp,
+    tempo_total
+  ) 
+
+```
+
+O processo de análise e encaminhamento de demandas na ouvidoria nacional dos serviços penais compreende três etapas distintas, sendo: processo de recebimento da manifestação; procedimentos de análise de documentos e encaminhamento da demanda ao órgão competente para solução da manifestação.
+
+Na primeira etapa, em sua maioria, o tempo medido para entrega da carta, e-mail, ofício ou fala.BR é utilizado para determinação do tempo de chegada à ouvidoria. Após a entrega da manifestação, inicia-se a contagem do tempo de análise pela ouvidoria com a elaboração dos documentos processuais e encaminhamento.
+
+Dessa forma, surgem três índices para medição do tempo: **Tempo de chegada**, **Tempo de tratamento** e **Tempo total de atendimento**. Sendo este último, a quantidade de dias necessários para tramitação de todo o processo.
+
+A tabela @tbl-tempos mostra as médias e as medianas para cada índice no período de referência.
+
+```{r}
+#| label: tbl-tempos
+#| tbl-cap: >
+#|   Médias e medianas das referências temporais utilizada como índices 
+#|   pela Ouvidoria Nacional dos Serviços Penais.
+
+t1 <- dados_gerais_tempos |>
+  filter(org_ano_inicio_tratamento %in% vetor_filtro1) |>
+  group_by(org_ano_inicio_tratamento) |> 
+  summarise(
+    media_chegada = round(mean(tempo_chegada_onsp,na.rm = TRUE),digits = 2),
+    media_tratamento = round(mean(tempo_tratamento_onsp,na.rm = TRUE),digits = 2),
+    media_total = round(mean(tempo_total,na.rm = TRUE),digits = 2),
+    
+    mediana_chegada = round(median(tempo_chegada_onsp, na.rm = TRUE),digits = 2),
+    mediana_tratamento = round(median(tempo_tratamento_onsp, na.rm = TRUE),digits = 2),
+    mediana_total = round(median(tempo_total, na.rm = TRUE),digits = 2),
+    
+    coef_chegada = round((sd(tempo_chegada_onsp, na.rm = TRUE)/media_chegada),digits = 2),
+    coef_tratamento = round((sd(tempo_tratamento_onsp, na.rm = TRUE)/media_tratamento),digits = 2),
+    coef_total = round((sd(tempo_total, na.rm = TRUE)/media_total),digits = 2)
+  ) |> 
+  pivot_longer(
+    cols = !c(org_ano_inicio_tratamento),
+    names_to = "medida",
+    values_to = "tempo"
+  ) |> 
+  mutate(
+    medida_resumo = case_when(
+      str_detect(medida, "media_") ~ "Média",
+      str_detect(medida, "coef_") ~ "Coef. de variação",
+      TRUE ~ "Mediana"
+    ),
+
+    medida = case_when(
+      str_detect(medida, "tratamento") ~ "Tempo de tratamento",
+      str_detect(medida, "chegada") ~ "Tempo de chegada",
+      TRUE ~ "Tempo total"
+    )
+  ) |> 
+  pivot_wider(names_from = medida_resumo,values_from = tempo) |> 
+  mutate(
+    tempo_adequado = case_when(
+      medida == "Tempo de chegada" & `Média`<20 ~ "Sim",
+      medida == "Tempo de tratamento" & `Média`<10 ~ "Sim",
+      medida == "Tempo total" & `Média`<30 ~ "Sim",
+      TRUE ~ "Não"
+    )
+  )
+    
+  
+  names(t1) <- c("Ano","Medida","Média","Mediana","Coef. de variação", "Tempo adequado")
+
+formattable::formattable(t1, align = c("c","l","l","l","l","c"),
+    list(
+    `Ano` = color_tile("lightgrey","orange"),
+    `Medida` = color_tile("lightgrey","orange"),
+    
+    area(col = c(`Média`)) ~ normalize_bar("#F6FF98", 0.2),
+    area(col = c(`Mediana`)) ~ normalize_bar("lightblue", 0.2),
+    area(col = c(`Coef. de variação`)) ~ normalize_bar("lightgreen", 0.2),
+    
+    `Tempo adequado` = formatter("span", 
+                                   style = x ~ style(color = case_when(
+                                                                      x == "Sim" ~ "Green",
+                                                                      TRUE ~ "red"                                                                    ), 
+                                            x ~ sprintf("%.2f (rank: %02g)", x, rank(-x)))
+    
+                                      )
+    
+    
+))
+  
+
+```
+
+Agora, a @fig-evolucao-media mostra a evolução das médias mensais dos tempos de atendimento.
+
+```{r}
+dados_gerais_tempo_media <- 
+  dados_gerais |> 
+  filter(org_ano_inicio_tratamento %in% vetor_filtro1) |> 
+  select(
+    org_ano_inicio_tratamento,
+    org_mes_inicio_tratamento,
+    tempo_chegada_onsp,
+    tempo_tratamento_onsp,
+    tempo_total
+  ) |> 
+  mutate(
+    org_mes_inicio_tratamento = factor(org_mes_inicio_tratamento, levels = meses)
+  ) |> 
+  group_by(
+    org_ano_inicio_tratamento,
+    org_mes_inicio_tratamento
+  ) |> 
+  summarise(
+    `Tempo médio de chegada`=round(mean(tempo_chegada_onsp, na.rm = TRUE),digits = 2),
+    `Tempo médio de tratamento`=round(mean(tempo_tratamento_onsp,na.rm= TRUE),digits = 2),
+    `Tempo médio total`=round(mean(tempo_total, na.rm = TRUE),digits = 2)
+  ) |> 
+  pivot_longer(
+    cols = c(`Tempo médio de chegada`:`Tempo médio total`),
+    names_to = "Tempos",
+    values_to = "Dias"
+  )
+```
+
+```{r}
+#| label: fig-evolucao-media
+#| fig-cap: >
+#|          Exemplo de gráfico utilizando o pacote "plotly" sem "ggplot2". Os 
+#|          dados mostram a evolução dos tempos de tratamento das manifestações para
+#|          o ano de 2021.
+p4 <- dados_gerais_tempo_media |> 
+  plot_ly(
+    x = ~ org_mes_inicio_tratamento,
+    y = ~ Dias,
+    frame = ~ org_ano_inicio_tratamento,
+    type = "scatter",
+    mode = "lines+markers",
+    linetype = ~ Tempos,
+    color = ~ Tempos,
+    colors = c("#294661","#7F312F","#808080"),
+    showlegend = TRUE,
+    text = ~ Dias,
+    hoverinfo = "text"
+  )
+
+p4 <- p4 |> layout(
+  #title = "Tempos médios / 2021",
+  font = list(family = "Comic Sans MS", color = "#294661", size = 13),
+  xaxis = list(title = ""),
+  yaxis = list(title = "Tempo (Dias)"),
+  legend = list(orientation = "h")
+)
+
+p4 <- p4 |> animation_opts(
+  #frame = 500,
+  #transition = frame,
+  easing = "linear",
+  redraw = TRUE,
+  mode = "immediate"
+)
+
+
+p4 <- p4 |> animation_slider(
+    currentvalue = list(prefix = "Ano: ", 
+                        font = list(color="#294661")),
+                        hide = FALSE
+                        #xanchor = "left",
+                        #yanchor = "bottom"
+  )
+
+p4 <- p4 |>
+  animation_button(
+    x = 0, 
+    #xanchor = "bottom", 
+    y = 0, 
+    #yanchor = "bottom", 
+    label = "Avançar"
+  )
+
+
+p4 <- p4 %>% animation_opts(
+    1000, easing = "elastic", redraw = FALSE
+  )
+p4
+
+```
+
+```{r}
+
+#| label: fig-evolucao-mediana
+#| fig-cap: >
+#|          Exemplo de gráfico utilizando o pacote "plotly" sem "ggplot2". Os 
+#|          dados mostram a evolução dos tempos de tratamento das manifestações para
+#|          o ano de 2021.
+dados_gerais_tempo_mediana <- 
+  dados_gerais |> 
+  filter(org_ano_inicio_tratamento %in% vetor_filtro1) |> 
+  select(
+    org_ano_inicio_tratamento,
+    org_mes_inicio_tratamento,
+    tempo_chegada_onsp,
+    tempo_tratamento_onsp,
+    tempo_total
+  ) |> 
+  mutate(
+    org_mes_inicio_tratamento = factor(org_mes_inicio_tratamento, levels = meses)
+  ) |> 
+  group_by(
+    org_ano_inicio_tratamento,
+    org_mes_inicio_tratamento
+  ) |> 
+  summarise(
+    `Tempo mediano de chegada`=round(median(tempo_chegada_onsp, na.rm = TRUE),digits = 2),
+    `Tempo mediano de tratamento`=round(median(tempo_tratamento_onsp,na.rm= TRUE),digits = 2),
+    `Tempo mediano total`=round(median(tempo_total, na.rm = TRUE),digits = 2)
+  ) |> 
+  pivot_longer(
+    cols = c(`Tempo mediano de chegada`:`Tempo mediano total`),
+    names_to = "Tempos",
+    values_to = "Dias"
+  )
+
+p5 <- dados_gerais_tempo_mediana |> 
+  plot_ly(
+    x = ~ org_mes_inicio_tratamento,
+    y = ~ Dias,
+    frame = ~ org_ano_inicio_tratamento,
+    type = "scatter",
+    mode = "lines+markers",
+    linetype = ~ Tempos,
+    color = ~ Tempos,
+    colors = c("#294661","#7F312F","#808080"),
+    showlegend = TRUE,
+    text = ~ Dias,
+    hoverinfo = "text"
+  )
+
+p5 <- p5 |> layout(
+  #title = "Tempos médios / 2021",
+  font = list(family = "Comic Sans MS", color = "#294661", size = 13),
+  xaxis = list(title = ""),
+  yaxis = list(title = "Tempo (Dias)"),
+  legend = list(orientation = "h")
+)
+
+p5 <- p5 |> animation_opts(
+  #frame = 500,
+  #transition = frame,
+  easing = "linear",
+  redraw = TRUE,
+  mode = "immediate"
+)
+
+
+p5 <- p5 |> animation_slider(
+    currentvalue = list(prefix = "Ano: ", 
+                        font = list(color="#294661")),
+                        hide = FALSE
+                        #xanchor = "left",
+                        #yanchor = "bottom"
+  )
+
+p5 <- p5 |>
+  animation_button(
+    x = 0, 
+    #xanchor = "bottom", 
+    y = 0, 
+    #yanchor = "bottom", 
+    label = "Avançar"
+  )
+
+
+p5 <- p5 %>% animation_opts(
+    1000, easing = "elastic", redraw = FALSE
+  )
+p5
+
+```
+
+## Tipos de demandas {#sec-tipos-demandas}
+
+```{r}
+dados_gerais_tipos_demandas <- 
+  tipos_demandas|> 
+  filter(
+    org_ano_inicio_tratamento %in% vetor_filtro1,
+  ) |> 
+  group_by(
+    org_ano_inicio_tratamento,
+    tipo_demanda
+  ) |> 
+  summarise(
+    qtd = n()
+  ) |> 
+  ungroup() |> 
+  group_by(
+    org_ano_inicio_tratamento,
+    ) |> 
+  mutate(
+    total = sum(qtd, na.rm = TRUE),
+    porcentagem = round((qtd / total)*100, digits = 2)  
+  ) |>  
+  arrange(org_ano_inicio_tratamento, desc(porcentagem)) |> 
+  mutate(
+    tipo_demanda = factor(
+      tipo_demanda, 
+      levels = c("Solicitação","Denúncia","Reclamação","Sugestão","Elogio e/ou agradecimento"), 
+      ordered = TRUE)
+  )
+ 
+```
+
+```{r}
+#| label: fig-graf-tipos_demandas
+#| fig-cap: >  
+#|       tipos de demandas
+
+p6 <- dados_gerais_tipos_demandas |> 
+  plot_ly(
+    x = ~ tipo_demanda,
+    y = ~ qtd,
+    frame = ~ org_ano_inicio_tratamento,
+    type = "bar",
+    alpha = 0.9,
+    color = ~ tipo_demanda,
+    colors = "#294661",
+    showlegend = FALSE,
+    hoverinfo = "text"
+  )
+
+p6 <- p6 |> add_text(
+  text = ~ str_c(qtd,"; ",porcentagem,"%"),
+  textposition = "top",color = I("#294661")
+)
+
+p6 <- p6 |> layout(
+  #title = "Tempos médios / 2021",
+  uniformtext=list(minsize=8, mode='hide'),
+  font = list(family = "Comic Sans MS", color = "#294661", size = 13),
+  xaxis = list(title = ""),
+  yaxis = list(title = "Quantidade de Manifestações"),
+  legend = list(orientation = "h")
+)
+
+# p6 <- p6 |> animation_opts(
+#   easing = "linear",
+#   redraw = FALSE,
+#   mode = "immediate"
+# )
+
+
+p6 <- p6 |> animation_slider(
+    currentvalue = list(
+      prefix = "Ano: ", 
+      font = list(color="#294661")),
+      hide = FALSE
+      #xanchor = "left",
+      #yanchor = "bottom"
+  )
+
+p6 <- p6 |>
+  animation_button(
+    x = 0, 
+    #xanchor = "bottom", 
+    y = 0, 
+    #yanchor = "bottom", 
+    label = "Avançar"
+  )
+
+p6
+```
+
+## Solicitações {#sec-solicitacoes}
+
+Dentre os tipos de demandas, as solicitações possuem a maior diversidade entre 25 e XX tipificações diferentes. Os gráficos na XXXXXX mostram essa diversidade em valores absolutos. A comparação entre os anos relacionados, houve um aumento de XXXXXXXXX% no número de pedidos recebidos pela Onsp. Esse aumento foi alavancado pelas solicitações de assistência jurídica e transferência de unidade prisional.
+
+```{r}
+solicitacoes1 <- 
+  solicitacoes |> 
+  filter(org_ano_inicio_tratamento %in% vetor_filtro1) |> 
+  count(
+    org_ano_inicio_tratamento,
+    tipo_solicitacao,
+    name = "qtd"
+  ) |> 
+  group_by(
+    org_ano_inicio_tratamento
+  ) |> 
+  mutate(
+    total = sum(qtd, na.rm = TRUE),
+    porcentagem = round((qtd/total)*100, digits = 2)
+  ) |> 
+  arrange(org_ano_inicio_tratamento, desc(qtd)) 
+
+
+# for (index_ano in 1: NROW(vetor_filtro1)) {
+#   nome[[index_ano]] <- #PUT ALL TABLES INSIDE OF A LIST
+#     solicitacoes1 |> 
+#     filter(org_ano_inicio_tratamento == vetor_filtro1[index_ano]) |> 
+#     head()
+# }
+
+
+#solicitacoes1 <- bind_rows(nome[[1]],nome[[2]],nome[[3]])
+
+```
+
+<!-- ```{r} -->
+
+<!-- #| label: fig-graf-tipos_solicitacoes2 -->
+
+<!-- #| fig-cap: >   -->
+
+<!-- #|       tipos de solicitações -->
+
+<!-- p72 <- solicitacoes1 |>  -->
+
+<!--   ggplot(aes(x=tipo_solicitacao, y = qtd))+ -->
+
+<!--   geom_col( -->
+
+<!--     aes(fill = tipo_solicitacao), -->
+
+<!--     colour = "white",  -->
+
+<!--     alpha = .9 -->
+
+<!--   )+ -->
+
+<!--   facet_wrap( -->
+
+<!--     facets = ~ org_ano_inicio_tratamento, -->
+
+<!--     scales = "free", -->
+
+<!--     ncol = 1 -->
+
+<!--   )+ -->
+
+<!--   geom_text( -->
+
+<!--     aes(label = str_c(qtd,"; ",porcentagem,"%")), -->
+
+<!--     position = "identity", -->
+
+<!--     vjust = 0.0, -->
+
+<!--     hjust = 0.5, -->
+
+<!--     size = 3.0, -->
+
+<!--     family = "Comic Sans MS", -->
+
+<!--     fontface = "plain" -->
+
+<!--   )+ -->
+
+<!--   labs( -->
+
+<!--     x="Tipos de manifestações",  -->
+
+<!--     y="Quantidade" -->
+
+<!--   )+ -->
+
+<!--   scale_fill_manual(values = cores)+ -->
+
+<!--   theme_bw( -->
+
+<!--     base_size = 14,  -->
+
+<!--     base_family = "Comic Sans MS", -->
+
+<!--     base_line_size = 1,  -->
+
+<!--     base_rect_size = 1 -->
+
+<!--   )+ -->
+
+<!--   theme( -->
+
+<!--     plot.title = element_text(family = "Comic Sans MS",size = 8, face="bold"), -->
+
+<!--     text = element_text(family = "Comic Sans MS", color = "#294661"), -->
+
+<!--     legend.text  = element_text(color = "Black", size = 7, face = "plain",angle = 0), -->
+
+<!--     legend.title = element_blank(), -->
+
+<!--     legend.position = "bottom", -->
+
+<!--     axis.text.x = element_blank(), -->
+
+<!--     axis.text.y = element_text(family = "Comic Sans MS",size = 6, face="plain"), -->
+
+<!--     panel.grid = element_blank(), -->
+
+<!--     plot.background = element_rect(fill = "transparent"), -->
+
+<!--     panel.background = element_rect(fill = "transparent", color = NA) -->
+
+<!--   ) -->
+
+<!-- p72 -->
+
+<!-- ``` -->
+
+<!-- ```{r} -->
+
+<!-- #| label: fig-graf-tipos_solicitacoes -->
+
+<!-- #| fig-cap: >   -->
+
+<!-- #|       tipos de solicitações -->
+
+<!-- p7 <- solicitacoes1 |>  -->
+
+<!--   plot_ly( -->
+
+<!--     x = ~ tipo_solicitacao, -->
+
+<!--     y = ~ qtd, -->
+
+<!--     frame = ~ org_ano_inicio_tratamento, -->
+
+<!--     type = "bar", -->
+
+<!--     alpha = 0.9, -->
+
+<!--     color = ~ tipo_solicitacao, -->
+
+<!--     colors = cores, -->
+
+<!--     showlegend = TRUE, -->
+
+<!--     hoverinfo = "text" -->
+
+<!--   ) -->
+
+<!-- p7 <- p7 |> add_text( -->
+
+<!--   text = ~ qtd, -->
+
+<!--   textposition = "top", -->
+
+<!--   color = I("#294661") -->
+
+<!-- ) -->
+
+<!-- p7 <- p7 |> layout( -->
+
+<!--   #title = "Tempos médios / 2021", -->
+
+<!--   uniformtext=list(minsize=8, mode='hide'), -->
+
+<!--   font = list(family = "Comic Sans MS", color = "#294661", size = 13), -->
+
+<!--   xaxis = list(title = "",zeroline = F, showline= F,showgrid= F,showticklabels = F), -->
+
+<!--   yaxis = list(title = "Quantidade de Manifestações"), -->
+
+<!--   legend = list(orientation = "h",itemsize="constant", x=0.0,y=-1.5) -->
+
+<!--   #autosize = F,  -->
+
+<!--   #height = 1000, -->
+
+<!--   #widht = 1000 -->
+
+<!-- ) -->
+
+<!-- # p6 <- p6 |> animation_opts( -->
+
+<!-- #   easing = "linear", -->
+
+<!-- #   redraw = FALSE, -->
+
+<!-- #   mode = "immediate" -->
+
+<!-- # ) -->
+
+<!-- p7 <- p7 |> animation_slider( -->
+
+<!--     currentvalue = list( -->
+
+<!--       prefix = "Ano: ", -->
+
+<!--       font = list(color="#294661")), -->
+
+<!--       hide = FALSE -->
+
+<!--       #xanchor = "left", -->
+
+<!--       #yanchor = "bottom" -->
+
+<!--   ) -->
+
+<!-- p7 <- p7 |> -->
+
+<!--   animation_button( -->
+
+<!--     x = 0,  -->
+
+<!--     #xanchor = "bottom",  -->
+
+<!--     y = 0,  -->
+
+<!--     #yanchor = "bottom",  -->
+
+<!--     label = "Avançar" -->
+
+<!--   ) -->
+
+<!-- p7 -->
+
+<!-- ``` -->

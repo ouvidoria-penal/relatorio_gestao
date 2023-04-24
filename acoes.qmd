@@ -1,0 +1,307 @@
+# Ações {#sec-acoes}
+
+```{r}
+vetor_filtro1 <- c(2020,2021,2022)
+```
+
+Este capítulo trata das ações da Ouvidoria nacional dos Serviços Penais (Onasp) que objetivam: Atuar como instância de controle e participação social na execução penal; fomentar e apoiar formas de participação social; fomentar e apoiar a implantação e o funcionamento de ouvidorias externas.
+
+Dessa maneira, a Onasp se organizou e promoveu o I Fórum Nacional de Participação e Controle na Execução Penal, realizou inspeções prisionais, internalizou o Serviço de Informação ao Cidadão (SIC), atualizou sua estrutura organizacional, iniciou o processo de modernização do aparato tecnológico e participou de ações de práticas restaurativas.
+
+## Fórum Nacional de Participação e Controle na Execução Penal {#sec-forum}
+
+Organizado pela Ouvidoria Nacional dos Serviços Penais (Onasp) e Escola Nacional de Administração Pública (Enap), em novembro de 2020, ocorreu o primeiro Fórum Nacional de Participação e Controle na Execução Penal, em seu formato virtual, composto por dois webnários e uma oficina colaborativa. Os webnários contaram com participação de representantes do Depen, Enap, Conselhos de Comunidade e autoridades envolvidas na temática de participação e controle social na execução penal. Os dois Webnários realizados tiveram como tema: "O Voluntariado no Sistema Prisional" e "Controle e Participação na Execução Penal". Já as oficinas objetivaram a construção de diretrizes para o bom funcionamento e fortalecimento dos Conselhos de Comunidade para desempenho de suas atividades previstas no artigo 8 da Lei de Execução Penal (LEP). Como resultado das oficinas podemos destacar: a interação e conexão entre o grupo; o contato dos Conselheiros com servidores do CNJ, DPU e CNMP; as diretrizes produzidas em quatro eixos que trouxeram uma convergência do grupo em relação a esta autonomia almejada (recursos financeiros, sede própria, equipe fixa), reconhecimento desejado (percepção do Conselho como um órgão do sistema de execução penal) e esforço para ampliação da capacidade de ação (parcerias para ofertar mais serviços e apoio às pessoas privadas de liberdade, egressos e suas famílias).
+
+## Inspeções em estabelecimentos penais {#sec-inspecoes}
+
+```{r}
+library(readxl)
+library(DT)
+library(formattable)
+library(tidyverse)
+
+tabela_inspecoes <- 
+  readxl::read_xlsx(
+    path = "tabelas_auxiliares/tabela_inspecoes_prisionais.xlsx"
+  ) |> 
+  mutate(
+    estabelecimento_penal = as.factor(str_trim(estabelecimento_penal)),
+    periodo = as.factor(periodo),
+    uf = as.factor(uf)
+  )
+names(tabela_inspecoes) <- c("UF","Ano","Período","Estabelecimento Penal")
+
+qtd_inspecoes <- 
+  tabela_inspecoes |> 
+  group_by(Ano) |> 
+  summarise(
+    Quantidade = n()
+  ) 
+
+qtd_estado <- 
+  tabela_inspecoes |> 
+  count(Ano,UF) |> 
+  group_by(Ano) |> 
+  summarise(
+    qtd_estado = n()
+  )
+
+qtd_inspecoes <- left_join(qtd_inspecoes,qtd_estado)
+names(qtd_inspecoes) <- c("Ano", "Quantidade de Inspeções","Quantidade de Estados")
+
+```
+
+Considerando as competências e atribuições previstas no Regimento Interno do Depen, Portaria nº 199, de 09 de novembro de 2018, em seu art. 4º, cabe à Ouvidoria Nacional dos Serviços Penais - Onasp inspecionar estabelecimentos penais e produzir relatórios para subsídio da gestão penitenciária e submetê-los aos interessados.
+
+Os relatórios discorrem sobre visitas de inspeções realizadas em estabelecimentos prisionais estaduais, conforme às normas da Constituição da República, do sistema interamericano de Direitos Humanos e da legislação ordinária sobre execução penal, assim como às diretrizes de política penitenciária traçadas pelo Conselho Nacional de Política Criminal e Penitenciária (CNPCP), Conselho Nacional de Justiça (CNJ) e Departamento Penitenciário Nacional (Depen).
+
+As visitas são realizadas com o conhecimento prévio das autoridades públicas locais, obtendo-se o apoio logístico das Secretarias / Órgãos responsáveis pela administração penitenciária estadual.
+
+As informações quantitativas presentes nos relatórios são obtidas e preenchidas, até o momento, em formulários físicos pela equipe do Depen no momento das visitas, cuja rotina consistiu em percorrer o interior das unidades, juntamente com diretores, chefes de Segurança e técnicos Penais das unidades.
+
+Fazem, ainda, parte dos relatórios fotografias, anotações e observações pertinentes às unidades visitadas. Por fim, visando contribuir para a melhoria da gestão do Sistema Prisional dos Estados da Federação, apresenta-se recomendações ao Governo do Estado, à Secretaria / Órgãos responsáveis pela administração penitenciária estadual, aos Tribunais de Justiça, às Varas de Execuções Penais, ao Ministérios Públicos Estaduais e às Defensorias Públicas Estaduais.
+
+No período de referência, conforme cronogramas de Inspeções aprovado pela Direção Geral do Depen, foram realizadas inspeções em `r nrow(tabela_inspecoes)` estabelecimentos penais [^acoes-1]:
+
+[^acoes-1]: Importante ressaltar que, nos anos de 2020 e 2021, houve adaptação do cronograma de inspeções devido a pandemia de coronavírus declarada pela Organização Mundial de Saúde em março de 2020.
+
+Seguem as tabelas com as quantidades de inspeções realizadas a cada ano e especificação das unidades penais inspecionadas no período de referência.
+
+```{r}
+formattable::formattable(
+   qtd_inspecoes, 
+    align = c("c","l","l"),
+    list(
+    `Ano` = color_tile("lightgrey","orange"),
+    area(col = c(`Quantidade de Inspeções`)) ~ normalize_bar("lightyellow", 0.2),
+    area(col = c(`Quantidade de Estados`)) ~ normalize_bar("lightgreen", 0.2)
+    #`Descrição` = color_tile("lightblue","lightyellow")
+  ))
+```
+
+ 
+
+```{r}
+formattable::formattable(
+   tabela_inspecoes, 
+    align = c("c","l","l","l"),
+    list(
+    `UF` = color_tile("lightgrey","orange"),
+    `Ano` = color_tile("lightblue","lightyellow")
+    #`Descrição` = color_tile("lightblue","lightyellow")
+  )) |> 
+  as.datatable(
+    escape = FALSE,
+    #options = list(scrollX = TRUE),
+    rownames = FALSE,
+    filter = "top",
+    options = list(
+    pageLength = 10, 
+    lengthMenu = seq(10,max(nrow(tabela_inspecoes))+10,10),
+    autoWidth = TRUE,
+    initComplete = JS(
+    "function(settings, json) {",
+    "$('body').css({'font-family': 'Calibri'});",
+    "}"
+    ),
+    language = list(
+      info = 'Mostrando de _START_ para _END_ em um total de _TOTAL_ registros',
+      paginate = list(previous = 'Anterior', `next` = 'Seguinte'),
+      url = '//cdn.datatables.net/plug-ins/1.10.11/i18n/Portuguese-Brasil.json'
+    )
+  #pageLength = 5
+    )
+  )
+
+```
+
+ 
+
+Para a definição das unidades da federação que serão visitadas foram definidos os critérios abaixo elencados, utilizando-se de informações do FUNPEN e da Onasp:
+
+-   Unidades da Federação com maior ou menor número de manifestações apresentadas à Onasp;
+-   Unidades da Federação com menor número de manifestações apresentadas à Onasp;
+-   Unidades da Federação em áreas de fronteiras;
+-   Unidades da Federação com maior população prisional por etnia indígena;
+-   Unidades da Federação com menor população prisional;
+-   Unidades da Federação com maior número de presos sem condenação;
+-   Unidades da Federação com maior percentual de presos sem condenação;
+-   Unidades da Federação com menor execução do Fundo Penitenciário Nacional - FUNPEN.
+
+Não havendo ponderação entre os critério de seleção, foram definidas as unidades da Federação com maior pontuação apresentada, além daqueles Estados que possuem Medida Provisórias e Cautelares emitida pelo Sistema Interamericano de Direitos Humanos - SIDH.
+
+## Serviço de Informação ao Cidadão (SIC) {#sec-sic}
+
+O Serviço de Informação ao Cidadão (SIC) é a unidade responsável por atender os pedidos de acesso à informação feitos ao Ministério da Justiça e Segurança Pública, com base na Lei nº 12.527, de 18 de novembro de 2011 (Lei de Acesso à Informação).
+
+A Portaria nº 681, de 5 de dezembro de 2019, institui, no âmbito do Ministério da Justiça e Segurança Pública, a Rede de Serviços de Informação ao Cidadão -- Rede SIC, na qual o Departamento Penitenciário integra o Serviço de Informação ao Cidadão Setorial -- SIC Setorial.
+
+Nesse sentido, o Art. 5º da referida Portaria estabelece:
+
+::: callout-note
+## Atribuições dos SICs setoriais.
+
+*Art. 5º Aos SIC Setoriais compete:*
+
+*I - atender e orientar o cidadão quanto ao acesso à informação;*
+
+*II - informar sobre a tramitação de documentos nas unidades de sua competência;*
+
+*III - monitorar as respostas recebidas, reorientando as unidades respondentes quanto à necessária qualidade das respostas, se for o caso;*
+
+*IV - fornecer diretamente ao cidadão resposta ao pedido de acesso à informa- ção relativo às suas unidades, inclusive em relação aos pedidos encaminhados pelo SIC Central, observado o disposto no art. 11 da Lei nº 12.527, de 2011;*
+
+*V - receber recurso contra a negativa de acesso à informação ou referente a pedido de desclassificação relativo às suas unidades, encaminhando-os à autoridade competente para apreciação; e*
+
+*VI - encaminhar semestralmente à Ouvidoria-Geral relatório com os pedidos de acesso à informação formulados, para publicação na internet, de forma ativa, das respostas aos pedidos mais frequentes.*
+
+*§ 1º O SIC Setorial, ao receber pedido de acesso à informação sobre assunto com potencial repercussão à imagem ou integridade do Ministério, deverá:*
+
+*I - dar imediato conhecimento de seu teor à autoridade de monitoramento referida no art. 13 desta Portaria, por meio do SIC Central, para acompanhamento e, se for o caso, fornecimento de orientações adicionais sobre a resposta ao cidadão;*
+
+*II - verificar se a resposta ao pedido de acesso à informação não contraria outras manifestações proferidas sobre o mesmo assunto no âmbito do Ministério; e*
+
+*III - responder ao cidadão, verificando se a resposta, uma vez assinada, foi validada pelo Gabinete do dirigente máximo do órgão.*
+
+*§ 2º O SIC Setorial, ao receber pedido de acesso à informação fora de suas competências, deverá adotar a seguinte providência:*
+
+*I - se tiver conhecimento do órgão ou entidade responsável pela informação ou que a detenha, deverá encaminhar-lhe o pedido;*
+
+*II - se não tiver conhecimento do órgão ou entidade responsável pela informação ou que a detenha, deverá responder com orientação sobre a necessidade de abertura de novo pedido, dirigido ao órgão ou entidade competente.*
+
+*§ 3º O relatório de que trata o inciso VI do caput deste artigo deverá conter, no mínimo, as seguintes informações:*
+
+*I - estatísticas sobre os pedidos recebidos, deferidos e indeferidos e os prazos de atendimento, discriminados por unidade;*
+
+*II - diagnóstico sobre o andamento do SIC Setorial; e*
+
+*III - justificativas para eventuais atrasos ou omissões praticadas pelas respectivas unidades no atendimento aos pedidos.*
+
+*Art. 6º O SIC Central e o SIC Setorial, ao receberem pedido de acesso à informação cujo assunto seja de sua competência, deverão encaminhá-lo imediatamente à unidade respondente.*
+
+*§ 1º A unidade respondente de que trata o caput deste artigo terá o prazo de até quinze dias para encaminhar a resposta ao SIC competente, conforme o disposto no art. 11 da Lei nº 12.527, de 2011.*
+
+*§ 2º A unidade respondente, ao verificar que necessita de prazo superior ao inicialmente fixado nos termos do § 1º deste artigo, deverá solicitar prorrogação, devidamente fundamentada, por mais dez dias, ao SIC Central ou Setorial competente.*
+
+*§ 3º No caso de deferimento da prorrogação de que trata o § 2º deste artigo, o SIC Central ou Setorial encaminhará a justificativa emitida pela unidade respondente ao requerente, nos termos do art. 16 do Decreto nº 7.724, de 2012.*
+
+*§ 4º A unidade respondente, ao verificar que não dispõe das informações solicitadas, ou de parte delas, deverá comunicar imediatamente ao SIC Central ou Setorial competente.*
+
+*§ 5º Havendo mais de uma unidade respondente, aquela com maior pertinência temática deverá consolidar as informações que servirão de resposta ao requerente, ficando, cada unidade, responsável pela parcela da informação que for de sua competência.*
+:::
+
+Desde que foi instituído, o Serviço de Informação ao Cidadão Setorial da Secretaria Nacional de Políticas Penais ficou a cargo do Serviço de Protocolo, porém, com o Decreto nº 10.785, de 1º de setembro de 2021 - que alterou a estrutura regimental do Ministério da Justiça e Segurança Pública - a função de Chefe do Serviço de Informação ao Cidadão passou a integrar a Ouvidoria Nacional dos Serviços Penais a partir de 1º de outubro de 2021.
+
+### Indicadores do Serviço de Informação ao Cidadão {#sec-sic-dados-2021}
+
+Os indicadores de atendimento dos processos relativos ao SIC Setorial da Senappen estão relacionados na tabela abaixo. As informações são extraídas do Sistema Eletrônico de Informações (SEI). Com relação ao ano de 2021, os dados foram coletados a partir de outubro, pois a ouvidoria encarregou-se dos procedimentos de tratamento desse tipo de demanda a partir do referido mês, conforme Decreto nº 10.785, de 1º de setembro de 2021.
+
+```{r}
+
+tabela_indicadores_sic <- 
+ readxl::read_xlsx(
+      path = "tabelas_auxiliares/tabela_indicadores_sic.xlsx"
+  ) 
+names(tabela_indicadores_sic) <- c("Ano","Processos gerados","Processos tramitados","Tempo Médio")
+
+formattable::formattable(
+    tabela_indicadores_sic,
+    align = c("l","c","c","c"),
+    list(
+    `Ano` = color_tile("lightgrey","orange")
+    #`Descrição` = color_tile("lightblue","lightyellow")
+    )
+  )
+
+#tabela_sic_processos_gerados
+
+```
+
+ 
+
+## Composição da Equipe de Ouvidoria {#sec-composicao-equipe}
+
+```{r}
+composicao <- 
+  readxl::read_xlsx(
+    path = "tabelas_auxiliares/tabela_composicao_equipe.xlsx"
+  ) |> 
+  pivot_wider(names_from = Cargo, values_from = Quantidade) |> 
+  mutate(
+    Total = `Servidores estatutários` + `Estagiários` + `Funcionários terceirizados`,
+    var_perc = 0
+  )
+
+for (i in 2:nrow(composicao)) {
+    composicao$var_perc[i]=(composicao$Total[i]/composicao$Total[i-1]-1)*100
+}
+
+composicao <- composicao |> mutate(var_perc = round(var_perc,digits = 2))
+
+names(composicao) <- c("Ano","Servidores Estatutários","Estagiários","Funcionários Terceirizados","Total","Var. Percentual(%)")
+```
+
+A tabela abaixo mostra a evolução da quantidade de colaboradores da Onasp no período de referência. A última coluna da tabela mostra a variação percentual dessa variável.
+
+```{r}
+
+formattable::formattable(
+   composicao, 
+    align = c("c","c","c","c","l"),
+    list(
+    `Ano` = color_tile("lightgrey","orange"),
+    #area(col = c(`Servidores estatutários`)) ~ normalize_bar("lightyellow", 0.2),
+    #area(col = c(`Estagiários`)) ~ normalize_bar("lightblue", 0.2),
+    #area(col = c(`Funcionários terceirizados`)) ~ normalize_bar("lightgreen", 0.2),
+    area(col = c(`Total`)) ~ normalize_bar("#F6FF98", 0.2)
+  ))
+
+```
+
+Considerando a gama de competências atribuídas à Ouvidoria e como forma de garantir a continuidade dos serviços e suas execuções, as atividades foram distribuídas entre seus integrantes, compreendendo a seguinte divisão de funções:
+
+-   Desenvolvimento de ações para realização das Inspeções em Estabelecimentos Penais;
+
+-   Tratamento e acompanhamento das manifestações recebidas pela ouvidoria e acompanhamentos eventuais nas inspeções;
+
+-   Gerenciamento de informações;
+
+-   Tratamento e coletados de dados;
+
+-   Elaboração e automatização de relatórios;
+
+-   Composição do plantão de segurança da sede; e
+
+-   Desenvolvimento e acompanhamento de projetos.
+
+Em relação a recursos destinados à Ouvidoria, importa esclarecer que até 2018 o plano orçamentário do Departamento Penitenciário Nacional apresentava ação orçamentária específica para "Fortalecimento de Participação e Controle Social", estando sob a responsabilidade da Onasp a sua execução. Em 2019 ocorreu uma reestruturação em todo o plano orçamentário do Órgão, com o objetivo de agrupar despesas destinadas à políticas e projetos congêneres, de forma a permitir que diferentes Diretorias do DEPEN pudessem realizar a execução dos recursos em ações e atividades relacionadas à temática de participação social. Os recursos utilizados nos projetos desenvolvidos pela Onasp, desde estão são oriundos de ações orçamentárias vinculadas à Diretoria de Políticas Penitenciárias.
+
+## Modernização da Ouvidoria {#sec-modernizacao}
+
+Com o início de uma nova gestão na Ouvidoria Nacional dos Serviços Penais -- Onasp - no ano de 2019, foi diagnosticado uma grande demanda represada de solicitações não atendidas dos anos anteriores, além disso, verificou-se que os equipamentos de trabalho deste setor encontravam-se obsoletos.
+
+Foi então, iniciado um processo de modernização do setor, onde foram adquiridos equipamentos de *scanner* de mesa, fragmentadora de papel, ar condicionado portátil e data show.
+
+Também, foram iniciados processos para a substituição de computadores e outros equipamentos necessários para os bom andamento dos processos e melhora do ambiente de trabalho, proporcionando, assim, uma melhor qualidade de vida para todos os servidores.
+
+O ano de 2022 foi pautado por grandes mudanças dentro da Ouvidoria Nacional dos Serviços Penais -- Onasp. Recebeu-se 03 novos servidores aprovados do último concurso para o reforço da equipe e, com a mudança para a nova sede da Secretaria Nacional de Políticas Penais, verificou-se várias necessidades para adequação ao novo espaço afim de oferecer um bom ambiente de trabalho aos servidores e colaboradores.
+
+Foi dado início a renovação dos equipamentos de informática e mobiliários do setor afim de dar mais eficiência nos atendimentos às demandas dos usuários
+
+Atualmente, em andamento, existem processos para novas aquisições de itens como máquina fotográfica, aparelho televisor, quadro de aviso, *tablets*, umidificadores entre outros.
+
+## Práticas restaurativas {#sec-praticas-restaurativas}
+
+A Ouvidoria Nacional dos Serviços Penais promoveu em outubro de 2021 uma Capacitação em Justiça Restaurativa no Sistema Prisional. A capacitação foi resultado de uma parceria entre o Programa das Nações Unidas (PNUD) e o Departamento Penitenciário Nacional (Depen) com base no projeto BRA/14/011, de Fortalecimento da Gestão do Sistema Prisional Brasileiro, que visa incluir a justiça restaurativa no sistema da justiça criminal e do sistema penitenciário de maneira ampla e detalhada, gerando mudanças e transformações no nível institucional e também nas próprias práticas de resposta ao crime e ao conflito nas prisões.
+
+O evento ocorreu em Porto Alegre, nos dias 13,14,15,19,20,21 e 22 outubro de 2021, totalizando carga horária de 40 (quarenta) horas-aula e contou com 10 servidores do Depen e 30 servidores da Superintendência dos Serviços Penitenciários (Susepe) do Rio Grande do Sul. Os encontros foram conduzidos pelo professor Luís Fernando Bravo de Barros e pela professora Francisca Lozano Espina, que se aprofundaram, respectivamente, na metodologia dos Círculos Restaurativos e de Construção de Paz e na metodologia da mediação prisional e penitenciária.
+
+## Atuação em Rede - Contexto Pandêmico {#sec-atuacao-rede}
+
+Os efeitos decorrentes das medidas preventivas adotadas para o enfrentamento da pandemia no sistema prisional brasileiro, especialmente quanto a suspensão das visitas sociais e restrição de acessos aos estabelecimentos penais, exigiram da Ouvidoria Nacional dos Serviços Penais uma atuação integrada com as estruturas estaduais de ouvidoria, uma vez que suas estruturas passaram a desempenhar um papel de mediação entre familiares e a gestão pública, especialmente na busca por informações sobre as condições de saúde e tratamento das pessoas privadas de liberdade. Neste sentido, entre 2020 e 2021, foram realizadas cinco videoconferências com representantes das Ouvidorias Penitenciárias, existentes em 19 (dezenove) unidades federativa, com o propósito de compartilhar informações e boas práticas adotadas pelas gestões estaduais, no propósito de criar canais mais efetivos e céleres para informações. Como já mencionado a suspensão das visitas, as restrições impostas para saídas externas, além dos números crescentes de contaminados no sistema prisional , divulgados pelos meios de comunicação, resultaram no aumento significativo de manifestações recebidas na Onasp - especialmente denúncias ([seção @sec-denuncias]) - através de e-mail e da Plataforma Integrada de Ouvidoria e Acesso à Informação (Fala.BR), o que demandou a necessidade de criação de canais de diálogo aproximado para a articulação de ações e a construção de estratégias que pudessem, ao menos, minimizar a angustia dos familiares frente a recorrente busca por noticias e informações.
+
+Como resultado de articulações realizadas podemos citar a experiência realizada junto ao Ministério Público do Distrito Federal e Territórios que resultou na doação pelo Departamento Penitenciário Nacional de 40 tablets para a realização de videochamadas entre pessoas privadas de liberdade e seus familiares. Tal ação foi objeto de matérias jornalísticas [@correio].
+
+Sobre a atuação em rede, podemos citar ainda a iniciativa realizada entre Ouvidoria Nacional dos Serviços Penais, a Comissão do Sistema Prisional, Controle Externo da Atividade Policial e Segurança Pública do Conselho Nacional do Ministério Público (CSP/CNMP) e o Instituto Ação pela Paz que possiblitou a doação e distribuição, pelo Instituto Todos pela Saúde (ITpS), de quase três milhões de máscaras reutilizáveis ao sistema prisional, para pessoas privadas de liberdade e corpo funcional nas 27 unidades federativas, atingindo a totalidade dos mais de 1.400 estabelecimentos penais existentes no território nacional [@cnmp].
+
+## Referências {.unnumbered}
