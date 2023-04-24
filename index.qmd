@@ -24,7 +24,7 @@ No período entre 2020 e 2021, o relatório de gestão da Ouvidoria Nacional dos
 
 -   selecionar observações e itens em tabelas e gráficos;
 
-Outro avanço tecnológico significativo dos trabalhos na Ouvidoria Nacional dos Serviços Penais diz respeito à publicação do **Painel de Tratamento das Demandas de Ouvidoria**. Essa é uma ferramenta de *Business Inteligence* construída pela equipe da Onasp e atualizada constantemente com informações detalhadas acerca das manifestações recebidas. O objetivo principal é subsidiar as ações da ouvidoria e, em segundo plano, complementar as análises estatísticas contida neste relatório e ampliar a publicidade e transparência dos processos. [Clique aqui para visualizar o painel.](https://app.powerbi.com/links/Pu1YtXZQOP?ctid=eb090420-444c-43f7-91f2-4b8da6bfe8e1&pbi_source=linkShare&bookmarkGuid=00a4c543-938f-4619-bc10-0cf7500e92ed)
+Outro avanço tecnológico significativo dos trabalhos na Ouvidoria Nacional dos Serviços Penais diz respeito à publicação do **Painel de Tratamento das Demandas de Ouvidoria**. Essa é uma ferramenta de *Business Inteligence* construída pela equipe da Onasp e atualizada constantemente com informações detalhadas acerca das manifestações recebidas. O objetivo principal é subsidiar as ações da ouvidoria e, em segundo plano, complementar as análises estatísticas contida neste relatório e ampliar a publicidade e transparência dos processos. [Clique aqui para visualizar o painel.](https://app.powerbi.com/view?r=eyJrIjoiNGFkMGQ2MjQtMWU3ZS00NjZmLThhZTAtMWZmYzMwNTJlMWVkIiwidCI6ImViMDkwNDIwLTQ0NGMtNDNmNy05MWYyLTRiOGRhNmJmZThlMSJ9)
 
 Entre outras informações, o painel contém:
 
