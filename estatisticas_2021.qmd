@@ -115,14 +115,14 @@ Este capítulo traz as informações pormenorizadas acerca das solicitações, d
 
 Principalmente, objetiva-se quantificar o trabalho exercido pela Onasp. Especificamente, este capítulo visa gerar índices qualitativos / quantitativos para apoio a tomada de decisão dos gestores e supervisionar o andamento das atividades de ouvidoria em âmbito nacional.
 
-São analisados - numericamente e graficamente - os seguintes aspectos: características dos processos recebidos ([seção @sec-caracteristicas-processos-2021]); demandas tipificadas como solicitações ([seção @sec-solicitacoes-2021]); denúncias ([seção @sec-denuncias-2021]); reclamações ([seção @sec-reclamacoes-2021]); sugestões ([seção @sec-sugestoes-2021]); e elogios ou agradecimentos ([seção @sec-elogios-2021]). 
+São analisados - numericamente e graficamente - os seguintes aspectos: características dos processos recebidos ([seção @sec-caracteristicas-processos-2021]); demandas tipificadas como solicitações ([seção @sec-solicitacoes-2021]); denúncias ([seção @sec-denuncias-2021]); reclamações ([seção @sec-reclamacoes-2021]); sugestões ([seção @sec-sugestoes-2021]); e elogios ou agradecimentos ([seção @sec-elogios-2021]).
 
 Para ampliar o poder de visualização do trabalho, a metodologia de coleta de dados foi melhorada e novas informações foram agregadas em 2021. Como resultado, têm-se informações sobre a forma como os usuários acessam a ouvidoria ([seção @sec-meios-acesso-ouvidoria-2021]); sobre a aptidão e tratamento dos requerimentos ([seção @sec-aptidao-2021]); e sobre evolução dos índices gerados para controle do tempo de atendimento dos processos ([seção @sec-tempos-2021]). Para o restante do quesitos, manteve-se a metodologia de análise das informações.
 
 ::: callout-important
 ## Importante!!!
 
-*Todas as análises contidas neste relatório tem o início do tratamento da demanda como data de referência.*
+*Todas as análises contidas neste relatório têm o início do tratamento da demanda como data de referência.*
 :::
 
 Por fim, durante todo o capítulo, são utilizados recursos gráficos e tabelas para melhor entendimento do comportamento das variáveis envolvidas no processo de análise.

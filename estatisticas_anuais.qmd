@@ -91,7 +91,7 @@ As seções [seção @sec-tempos1] e [seção @sec-producao] gerenciam os índic
 ::: callout-important
 ## Importante!!!
 
-*Todas as análises contidas neste relatório tem o início do tratamento da demanda como data de referência.*
+*Todas as análises contidas neste relatório têm o início do tratamento da demanda como data de referência.*
 :::
 
 Por fim, durante todo o capítulo, são utilizados recursos gráficos e tabelas para melhor entendimento do comportamento das variáveis envolvidas no processo de análise.
