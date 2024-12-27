@@ -6,7 +6,7 @@ project:
 book:
   title: "Relatório de Gestão da Ouvidoria Nacional dos Serviços Penais"
   author: "Ouvidoria Nacional dos Serviços Penais"
-  date: today
+  date: "2023/04/11"
   reader-mode: true
   page-navigation: true
   page-footer:
