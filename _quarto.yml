@@ -6,16 +6,16 @@ project:
 book:
   title: "Relatório de Gestão da Ouvidoria Nacional dos Serviços Penais"
   author: "Ouvidoria Nacional dos Serviços Penais"
-  #date: "24 de abril de 2023"
+  date: today
   reader-mode: true
   page-navigation: true
   page-footer:
    background: "#294661"
    center:
     - text: "Secretaria Nacional de Políticas Penais - Senappen"
-      href: https://www.gov.br/depen/pt-br
+      #href: https://www.gov.br/depen/pt-br
     - text: "Ministério da Justiça e Segurança Pública - MJSP"
-      href: https://www.gov.br/mj/pt-br
+     # href: https://www.gov.br/mj/pt-br
   cover-image: images/senappen_brasao.png
   #logo: images/brasao_ouvidoria.jpeg
   image: images/senappen_brasao.png
